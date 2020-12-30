@@ -49,6 +49,9 @@ app.use(express.json())
 //middleware to allow for requests from all origins
 app.use(cors())
 
+//middleware for making express show static content from build directory
+app.use(express.static('build'))
+
 //console logging middleware
 app.use(
     morgan(":method :url :status :res[content-length] - :response-time ms :data")
@@ -115,6 +118,7 @@ app.post('/api/persons', (request, response) => {
     response.json(person)
 })
 
+//heroku uses process.env.PORT variable
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
