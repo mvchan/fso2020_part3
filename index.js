@@ -29,7 +29,7 @@ morgan.token("data", (request, response) => (
 ))
 
 ////////* REST API SETUP *////////
-//always maintain promises properly, especially for POST command below (i.e. place logic inside 'then')
+//always maintain promises properly, especially for POST command below (i.e. place logic inside 'then', relegating error catching to middleware)
 app.get('/', (request, response, next) => {
     response.send('<h1>Hello World!</h1>').catch(error => next(error))
 })
@@ -88,25 +88,17 @@ app.post('/api/persons', (request, response, next) => {
         })
     }
 
-    Person
-        .find({})
-        .then(result => {
-            if (result.find(person => person.name.toLowerCase() === body.name.toLowerCase())) {
-                response.status(400).json({ 
-                    error: 'name must be unique' 
-                })      
-            } else {
-                console.log(`now adding ${body.name} number ${body.number} to phonebook...`)
-                const person = new Person({
-                    name: body.name,
-                    number: body.number
-                })
-            
-                person.save().then(result => {
-                    console.log(`added ${body.name} number ${body.number} to phonebook`)
-                    response.json(result)
-                })
-            }
+    const person = new Person({
+        name: body.name,
+        number: body.number
+    })
+
+    person
+        .save()
+        .then(savedNote => savedNote.toJSON()) 
+        .then(savedAndFormattedNote => {
+            console.log(`added ${body.name} number ${body.number} to phonebook`)
+            response.json(savedAndFormattedNote)
         })
         .catch(error => next(error))
 })
@@ -119,8 +111,9 @@ app.put('/api/persons/:id', (request, response, next) => {
       number: body.number,
     }
   
+    //for update-related methods, validation is off by default and needs to be turned on through runValidators and context options
     Person
-        .findByIdAndUpdate(request.params.id, person, { new: true })
+        .findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true, context: 'query' })
         .then(updatedPerson => {
             response.json(updatedPerson)
         })
@@ -128,7 +121,8 @@ app.put('/api/persons/:id', (request, response, next) => {
 })
 
 // handler of requests with unknown endpoint
-// **this is an error handler, but is called by next()**
+// ** this is the default error handler if next was called without a parameter **
+// ** middleware ordering matters, so error handlers like these need to come towards the end **
 const unknownEndpoint = (request, response) => {
     response.status(404).send({ error: 'unknown endpoint' })
 }
@@ -136,7 +130,7 @@ const unknownEndpoint = (request, response) => {
 app.use(unknownEndpoint)
 
 // handler of requests with result to errors
-// ** this is the general error handlers and needs to be at the very end; it is called with next(error) **
+// ** this is the general error handler and needs to be at the very end; it is called with next(error) **
 // ** if there are additional error handlers, add them after this **
 const errorHandler = (error, request, response, next) => {
     console.error("*** GENERAL ERROR HANDLER ***")
@@ -144,12 +138,10 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError') {
         return response.status(400).send({ error: 'malformatted id' })
-    } else if (error.name === 'ReferenceError') {
-        return response.status(400).send({ error: 'id does not exist' })
-    } else if (error.name === 'TypeError') {
-        return response.status(400).send({ error: 'id does not exist' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
     }
-    
+
     next(error)
 }
   
