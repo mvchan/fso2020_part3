@@ -7,11 +7,11 @@ console.log('connecting to', url)
 
 mongoose
     .connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
-    .then(result => {    
-        console.log('connected to MongoDB')  
-    })  
-    .catch((error) => {    
-        console.log('error connecting to MongoDB:', error.message)  
+    .then(() => {
+        console.log('connected to MongoDB')
+    })
+    .catch((error) => {
+        console.log('error connecting to MongoDB:', error.message)
     })
 
 const personSchema = new mongoose.Schema({
@@ -29,16 +29,16 @@ const personSchema = new mongoose.Schema({
 })
 
 //apply the uniqueValidator plugin to userSchema
-personSchema.plugin(uniqueValidator);
+personSchema.plugin(uniqueValidator)
 
 //transform default _id object property into an id string
 //remove _id and __v
 personSchema.set('toJSON', {
     transform: (document, returnedObject) => {
-      returnedObject.id = returnedObject._id.toString()
-      delete returnedObject._id
-      delete returnedObject.__v
+        returnedObject.id = returnedObject._id.toString()
+        delete returnedObject._id
+        delete returnedObject.__v
     }
-  })
+})
 
 module.exports = mongoose.model('Person', personSchema)

@@ -21,10 +21,10 @@ app.use(express.json())
 
 //middleware for console logging
 app.use(
-    morgan(":method :url :status :res[content-length] - :response-time ms :data")
+    morgan(':method :url :status :res[content-length] - :response-time ms :data')
 )
 
-morgan.token("data", (request, response) => (
+morgan.token('data', (request) => (
     JSON.stringify(request.body)
 ))
 
@@ -48,12 +48,14 @@ app.get('/info', (request, response, next) => {
         })
         .catch(error => next(error))
 })
-  
+
 app.get('/api/persons', (request, response, next) => {
-    Person.find({}).then(persons => {
-        response.json(persons)
-    })
-    .catch(error => next(error))
+    Person
+        .find({})
+        .then(persons => {
+            response.json(persons)
+        })
+        .catch(error => next(error))
 })
 
 app.get('/api/persons/:id', (request, response, next) => {
@@ -76,15 +78,15 @@ app.delete('/api/persons/:id', (request, response, next) => {
             console.log(`Person ID # ${result.id} removed`)
             response.status(204).end()
         })
-        .catch(error => next(error))       
+        .catch(error => next(error))
 })
-  
+
 app.post('/api/persons', (request, response, next) => {
     const body = request.body
 
     if (!body.name || !body.number) {
-        return response.status(400).json({ 
-            error: 'name or number is missing' 
+        return response.status(400).json({
+            error: 'name or number is missing'
         })
     }
 
@@ -95,7 +97,7 @@ app.post('/api/persons', (request, response, next) => {
 
     person
         .save()
-        .then(savedNote => savedNote.toJSON()) 
+        .then(savedNote => savedNote.toJSON())
         .then(savedAndFormattedNote => {
             console.log(`added ${body.name} number ${body.number} to phonebook`)
             response.json(savedAndFormattedNote)
@@ -105,12 +107,12 @@ app.post('/api/persons', (request, response, next) => {
 
 app.put('/api/persons/:id', (request, response, next) => {
     const body = request.body
-  
+
     const person = {
-      name: body.name,
-      number: body.number,
+        name: body.name,
+        number: body.number,
     }
-  
+
     //for update-related methods, validation is off by default and needs to be turned on through runValidators and context options
     Person
         .findByIdAndUpdate(request.params.id, person, { new: true, runValidators: true, context: 'query' })
@@ -133,7 +135,7 @@ app.use(unknownEndpoint)
 // ** this is the general error handler and needs to be at the very end; it is called with next(error) **
 // ** if there are additional error handlers, add them after this **
 const errorHandler = (error, request, response, next) => {
-    console.error("*** GENERAL ERROR HANDLER ***")
+    console.error('*** GENERAL ERROR HANDLER ***')
     console.error(error.message)
 
     if (error.name === 'CastError') {
@@ -144,7 +146,7 @@ const errorHandler = (error, request, response, next) => {
 
     next(error)
 }
-  
+
 app.use(errorHandler)
 
 //heroku uses process.env.PORT variable
