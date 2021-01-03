@@ -7,13 +7,30 @@ GET http://localhost:3001/api/persons
 GET http://localhost:3001/api/persons/5feec040800cee09dcf4db1f
 
 ###
-DELETE http://localhost:3001/api/persons/5ff0ec88f76ecf0f18b02628
+DELETE http://localhost:3001/api/persons/5ff128ba1a79be800871c51b
 
 ###
 POST http://localhost:3001/api/persons/
 Content-Type: application/json
 
 {
-    "name": "F",
+    "name": "nonum",
     "number": "5576"
+}
+
+###
+POST http://localhost:3001/api/persons/
+Content-Type: application/json
+
+{
+    "name": "nonum"
+}
+
+###
+PUT http://localhost:3001/api/persons/5feec040800cee09dcf4db1f
+Content-Type: application/json
+
+{
+    "name": "bokum",
+    "number": "33333333"
 }
